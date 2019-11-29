@@ -1,10 +1,10 @@
 // 插件模式
 let pluginArr = []
-export function vueFunOn(fn) {
+function vueFunOn(fn) {
     pluginArr.push(fn)
 }
 
-export default function vueFun(fn) {
+function vueFun(fn) {
     // 一些临时字段，unload会自动清理
     let temp = {}
 
@@ -130,7 +130,13 @@ export default function vueFun(fn) {
 
                 return this
             },
-            make(opt = {}) {
+            make(opt) {
+                if(typeof opt == "string") {
+                    opt = options[opt]
+                    if(!opt) {
+                        opt = options[opt] = {}
+                    }
+                }
                 for (let n in lifecycles) {
                     opt[n] = lifecycleExec(lifecycles[n])
                 }
@@ -229,3 +235,7 @@ export default function vueFun(fn) {
 
     return options
 }
+
+vueFun.on = vueFunOn
+
+export default vueFun
