@@ -1,0 +1,23 @@
+{
+    "name": "vue-exec-fun",
+    "version": "1.0.0",
+    "description": "函数式方式写vue",
+    "main": "dist/lib/index.js",
+    "author": "张钰峰",
+    "license": "MIT",
+    "dependencies": {},
+    "devDependencies": {
+        "babel-plugin-transform-export-extensions": "^6.22.0",
+        "babel-preset-env": "^1.6.1",
+        "babel-preset-stage-0": "^6.24.1",
+        "babel-types": "^6.24.1",
+        "gulp": "^3.9.1",
+        "gulp-babel": "^6.1.2",
+        "gulp-if": "^2.0.2",
+        "gulp-load-plugins": "^1.5.0",
+        "gulp-newer": "^1.3.0",
+        "gulp-sequence": "^0.4.6",
+        "gulp-sourcemaps": "^2.6.0",
+        "gulp-uglify": "^2.1.2"
+    }
+}
