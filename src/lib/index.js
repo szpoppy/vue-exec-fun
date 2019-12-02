@@ -298,6 +298,18 @@ function vueFun(initFn) {
     lifecycle.on("destroyed", function() {
         vm = null
         isInit = false
+
+        // 自动清理临时字段中数据
+        for (let n in temp) {
+            if (n.indexOf("$handleT$") == 0) {
+                clearTimeout(temp[n])
+            }
+            if (n.indexOf("$handleI$") == 0) {
+                clearInterval(temp[n])
+            }
+            temp[n] = undefined
+            delete temp[n]
+        }
     })
 
     function initOrLatter(fn1, fn2) {
@@ -374,7 +386,7 @@ function vueFun(initFn) {
         $filters: setter({
             prot: "filters",
             isFreeze: true,
-            format: "fnToBindVM"
+            format: fnToBindVM
         }).on,
         $model: setter({
             prot: "model",
@@ -393,7 +405,7 @@ function vueFun(initFn) {
             format: fnToBindVM
         }).on,
 
-        $lifecycle: lifecycle,
+        $lifecycle: lifecycle.on,
         $created: lifecycle.currying("created"),
         $mounted: lifecycle.currying("mounted"),
         $destroyed: lifecycle.currying("destroyed"),
@@ -412,6 +424,7 @@ function vueFun(initFn) {
             // 数据
             data,
             $vm,
+            $bind,
             after: function(afterFn) {
                 afterArr.push(afterFn)
             },
