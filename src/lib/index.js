@@ -265,7 +265,7 @@ function vueFun(initFn) {
     */
 
     let quickNextArr = []
-    function quickToVueFn(key) {
+    function quickVueNext(key) {
         // let vKey = key.replace(/^\$+/, "")
         return function() {
             let vl = vm
@@ -318,7 +318,7 @@ function vueFun(initFn) {
         }
     }
 
-    let $emit = quickToVueFn("$emit")
+    let $emit = quickVueNext("$emit")
 
     let fnArg = {
         temp,
@@ -397,7 +397,7 @@ function vueFun(initFn) {
                 prot: "watch",
                 isBack: false
             }).on,
-            quickToVueFn("$watch")
+            quickVueNext("$watch")
         ),
         $methods: setter({
             prot: "methods",
@@ -412,7 +412,7 @@ function vueFun(initFn) {
 
         // 快捷方法
         $emit,
-        $nextTick: quickToVueFn("$nextTick")
+        $nextTick: quickVueNext("$nextTick")
     }
 
     let afterArr = []
@@ -433,7 +433,7 @@ function vueFun(initFn) {
             makeLifecycle,
             setter,
             fnToBindVM,
-            quickToVueFn,
+            quickVueNext,
             setProt
         })
     })

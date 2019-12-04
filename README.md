@@ -590,11 +590,13 @@ function setter({
 
 ### 快速定位到vue的原型方法
 
-`quickToVueFn(key:string):function`
+> 如果没初始化完成，会自动延后触发
+
+`quickVueNext(key:string):function`
 
 ```js
 
-fnArg.$nextTick = quickToVueFn("$nextTick")
+fnArg.$nextTick = quickVueNext("$nextTick")
 
 ```
 
