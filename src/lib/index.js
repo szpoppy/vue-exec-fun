@@ -16,11 +16,11 @@ export function vueFunInstall(vue, initFn) {
 }
 
 let msgOpt = {
-    before: "vue已经初始化，请在初始化之前调用",
-    after: "vue还没初始化，请在created之后调用"
+    before: 'vue已经初始化，请在初始化之前调用',
+    after: 'vue还没初始化，请在created之后调用'
 }
-function warn(msg = "before") {
-    console.warn(msgOpt[msg] || msg || "")
+function warn(msg = 'before') {
+    console.warn(msgOpt[msg] || msg || '')
 }
 
 function vueFun(initFn) {
@@ -36,7 +36,7 @@ function vueFun(initFn) {
         if (opt === undefined) {
             opt = this
         }
-        let arr = key.split(".")
+        let arr = key.split('.')
         for (let i = 0; i < arr.length; i += 1) {
             opt = opt[arr[i]]
             if (opt == null) {
@@ -50,7 +50,7 @@ function vueFun(initFn) {
     function $bind(fn, ...arg) {
         return function() {
             if (!vm) {
-                warn("after")
+                warn('after')
                 return
             }
             fn.apply(vm, arg.concat(arguments))
@@ -89,7 +89,7 @@ function vueFun(initFn) {
     }
     function $data(key, val) {
         let opt = vm || data
-        if (typeof key == "string") {
+        if (typeof key == 'string') {
             if (val === undefined) {
                 return getSafe(key, opt)
             }
@@ -114,7 +114,7 @@ function vueFun(initFn) {
     }
 
     function fnToBindVM({ value }) {
-        if (typeof value == "function") {
+        if (typeof value == 'function') {
             return $bind(value)
         }
         return value
@@ -138,7 +138,7 @@ function vueFun(initFn) {
                 options[prot] = opt
             }
             let back = (isBack && {}) || null
-            if (typeof key == "string") {
+            if (typeof key == 'string') {
                 key = { [key]: val }
             }
             for (let n in key) {
@@ -202,7 +202,7 @@ function vueFun(initFn) {
 
         let back = {
             on(key, fn) {
-                if (typeof key == "string") {
+                if (typeof key == 'string') {
                     let lc = lifecycles[key]
                     if (!lc) {
                         lc = lifecycles[key] = []
@@ -211,16 +211,15 @@ function vueFun(initFn) {
                     return
                 }
                 for (let n in key) {
-                    lifecycle(n, key[n])
+                    back.on(n, key[n])
                 }
 
                 return back
             },
             make(opt) {
-                if (typeof opt == "string") {
-                    if (options[opt]) {
-                        opt = options[opt]
-                    } else {
+                if (typeof opt == 'string') {
+                    opt = options[opt]
+                    if (!opt) {
                         opt = options[opt] = {}
                     }
                 }
@@ -285,26 +284,26 @@ function vueFun(initFn) {
     }
 
     let lifecycle = makeLifecycle()
-    lifecycle.on("beforeCreate", function() {
+    lifecycle.on('beforeCreate', function() {
         vm = this
         while (quickNextArr.length) {
             let toDo = quickNextArr.shift()
             vm[toDo.key](...toDo.args)
         }
     })
-    lifecycle.on("created", function() {
+    lifecycle.on('created', function() {
         vm = this
     })
-    lifecycle.on("destroyed", function() {
+    lifecycle.on('destroyed', function() {
         vm = null
         isInit = false
 
         // 自动清理临时字段中数据
         for (let n in temp) {
-            if (n.indexOf("$handleT$") == 0) {
+            if (n.indexOf('$handleT$') == 0) {
                 clearTimeout(temp[n])
             }
-            if (n.indexOf("$handleI$") == 0) {
+            if (n.indexOf('$handleI$') == 0) {
                 clearInterval(temp[n])
             }
             temp[n] = undefined
@@ -318,7 +317,7 @@ function vueFun(initFn) {
         }
     }
 
-    let $emit = quickVueNext("$emit")
+    let $emit = quickVueNext('$emit')
 
     let fnArg = {
         temp,
@@ -328,20 +327,20 @@ function vueFun(initFn) {
         data,
         $vm,
         $bind,
-        $name: setProt("name"),
+        $name: setProt('name'),
         $mixin: mixin,
         $components: setter({
-            prot: "components",
+            prot: 'components',
             sBack: false
         }).on,
         $directives: setter({
-            prot: "directives",
+            prot: 'directives',
             isBack: false
         }).on,
 
         // 参数
         $props: setter({
-            prot: "props",
+            prot: 'props',
             isFreeze: true,
             format({ backData, key, value }) {
                 let property = {
@@ -349,11 +348,11 @@ function vueFun(initFn) {
                         return vm ? vm[key] : null
                     }
                 }
-                let setFn = ""
-                if (toString.call(value).toLowerCase() == "[object object]") {
+                let setFn = ''
+                if (toString.call(value).toLowerCase() == '[object object]') {
                     setFn = value.setFn
                     if (setFn) {
-                        if (typeof setFn != "function") {
+                        if (typeof setFn != 'function') {
                             property.set = function(val) {
                                 $emit(setFn, val)
                             }
@@ -368,7 +367,7 @@ function vueFun(initFn) {
         }).on,
         $data,
         $computed: setter({
-            prot: "computed",
+            prot: 'computed',
             isFreeze: true,
             format({ backData, key }) {
                 Object.defineProperty(backData, key, {
@@ -384,35 +383,35 @@ function vueFun(initFn) {
             }
         }).on,
         $filters: setter({
-            prot: "filters",
+            prot: 'filters',
             isFreeze: true,
             format: fnToBindVM
         }).on,
         $model: setter({
-            prot: "model",
+            prot: 'model',
             isBack: false
         }).on,
         $watch: initOrLatter(
             setter({
-                prot: "watch",
+                prot: 'watch',
                 isBack: false
             }).on,
-            quickVueNext("$watch")
+            quickVueNext('$watch')
         ),
         $methods: setter({
-            prot: "methods",
+            prot: 'methods',
             isFreeze: true,
             format: fnToBindVM
         }).on,
 
         $lifecycle: lifecycle.on,
-        $created: lifecycle.currying("created"),
-        $mounted: lifecycle.currying("mounted"),
-        $destroyed: lifecycle.currying("destroyed"),
+        $created: lifecycle.currying('created'),
+        $mounted: lifecycle.currying('mounted'),
+        $destroyed: lifecycle.currying('destroyed'),
 
         // 快捷方法
         $emit,
-        $nextTick: quickVueNext("$nextTick")
+        $nextTick: quickVueNext('$nextTick')
     }
 
     let afterArr = []
