@@ -1,5 +1,21 @@
 let hasOwnProperty = Object.prototype.hasOwnProperty
 let toString = Object.prototype.toString
+//
+function assign(data1, data2) {
+    for (let n in data2) {
+        if (hasOwnProperty.call(data2, n)) {
+            let type1 = toString.call(data1[n]).toLowerCase()
+            let type2 = toString.call(data2[n]).toLowerCase()
+            if (type1 == type2 && type2 == '[object object]') {
+                assign(data1[n], data2[2])
+                continue
+            }
+
+            data1[n] = data2[n]
+        }
+    }
+}
+
 // 插件模式
 // eslint-disable-next-line
 let Vue
@@ -73,22 +89,22 @@ function vueFun(initFn) {
         return val.call(vm, arg)
     }
 
-    let data = {}
+    let optData = {}
     function dataProperty(back, key) {
         Object.defineProperty(back, key, {
             get() {
-                let opt = vm || data
+                let opt = vm || optData
                 return opt[key]
             },
             set(val) {
-                let opt = vm || data
+                let opt = vm || optData
                 // console.log("---------------", opt, key)
                 opt[key] = val
             }
         })
     }
     function $data(key, val) {
-        let opt = vm || data
+        let opt = vm || optData
         if (typeof key == 'string') {
             if (val === undefined) {
                 return getSafe(key, opt)
@@ -97,19 +113,17 @@ function vueFun(initFn) {
         }
 
         let back = {}
-        for (let n in key) {
-            if (hasOwnProperty.call(key, n)) {
-                opt[n] = key[n]
-                dataProperty(back, n)
-            }
-        }
+        assign(optData, key)
+        Object.keys.forEach(function(n) {
+            dataProperty(back, n)
+        })
         // console.log(back)
         return Object.freeze(back)
     }
     let options = {
         data() {
-            // console.log("data", data)
-            return data
+            // console.log("optData", optData)
+            return optData
         }
     }
 
@@ -324,7 +338,7 @@ function vueFun(initFn) {
         // 参数
         options,
         // 数据
-        data,
+        data: optData,
         $vm,
         $bind,
         $name: setProt('name'),
@@ -421,7 +435,7 @@ function vueFun(initFn) {
             // 参数
             options,
             // 数据
-            data,
+            data: optData,
             $vm,
             $bind,
             after: function(afterFn) {
