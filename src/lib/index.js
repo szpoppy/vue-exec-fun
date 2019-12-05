@@ -7,7 +7,7 @@ function assign(data1, data2) {
             let type1 = toString.call(data1[n]).toLowerCase()
             let type2 = toString.call(data2[n]).toLowerCase()
             if (type1 == type2 && type2 == '[object object]') {
-                assign(data1[n], data2[2])
+                assign(data1[n], data2[n])
                 continue
             }
 
@@ -114,7 +114,7 @@ function vueFun(initFn) {
 
         let back = {}
         assign(optData, key)
-        Object.keys.forEach(function(n) {
+        Object.keys(key).forEach(function(n) {
             dataProperty(back, n)
         })
         // console.log(back)
