@@ -64,26 +64,42 @@ function vueFun(initFn) {
     }
 
     let quickNextArr = []
-    function quickVueNext(key) {
-        return function(){
-            return new Promise(function(resolve){
-                if (!vm) {
-                    quickNextArr.push({
-                        resolve,
-                        key: key,
-                        args: arguments
-                    })
-                    return
-                }
-                if(typeof key == "function") {
-                    resolve(fn.apply(vm, arg.concat(arguments)))
-                    return 
-                }
-                if(typeof key == "string") {
-                    resolve(vm[key](...arguments))
-                    return
-                }
-                resolve(null)
+    function doVueNext({ resolve, key, args, reject }) {
+        let fn
+        if (typeof key == 'string') {
+            fn = vm[key]
+        } else if (typeof key == 'function') {
+            fn = key
+        }
+
+        if (!fn) {
+            reject && reject(null)
+            return null
+        }
+
+        let val = fn.apply(vm, args)
+        if (resolve) {
+            resolve(val)
+        }
+
+        return val
+    }
+
+    function quickVueNext(key, ...arg) {
+        return function(...args) {
+            args.unshift(...arg)
+            let todo = {
+                key,
+                args
+            }
+
+            if (vm) {
+                return doVueNext(todo)
+            }
+            return new Promise(function(resolve, reject) {
+                todo.reject = reject
+                todo.resolve = resolve
+                quickNextArr.push(todo)
             })
         }
     }
@@ -296,14 +312,7 @@ function vueFun(initFn) {
     lifecycle.on('beforeCreate', function() {
         vm = this
         while (quickNextArr.length) {
-            let toDo = quickNextArr.shift()
-            let arg = toDo.args || []
-            if (toDo.fn) {
-                toDo.resolve(toDo.fn.apply(vm, arg))
-            }
-            if (toDo.key) {
-                toDo.resolve(vm[toDo.key](...arg))
-            }
+            doVueNext(quickNextArr.shift())
         }
     })
     lifecycle.on('created', function() {
@@ -341,7 +350,7 @@ function vueFun(initFn) {
         // 数据
         data: optData,
         $vm,
-        $bind:quickVueNext,
+        $bind: quickVueNext,
         $name: setProt('name'),
         $mixin: mixin,
         $components: setter({

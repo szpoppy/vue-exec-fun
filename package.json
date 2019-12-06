@@ -1,6 +1,6 @@
 {
     "name": "vue-exec-fun",
-    "version": "1.0.15",
+    "version": "1.0.21",
     "description": "函数式方式写vue",
     "main": "dist/lib/index.js",
     "author": "张钰峰",
