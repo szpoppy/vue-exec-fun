@@ -350,7 +350,7 @@ function vueFun(initFn) {
         // 数据
         data: optData,
         $vm,
-        $bind: quickVueNext,
+        $bindNext: quickVueNext,
         $name: setProt('name'),
         $mixin: mixin,
         $components: setter({

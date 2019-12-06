@@ -9,9 +9,9 @@
 
 # vue-exec-fun
 
-- 外挂方式
-- 提供另一种方式的函数式方式写vue代码
-- 与vue-funciton-api不冲突
+-   外挂方式
+-   提供另一种方式的函数式方式写 vue 代码
+-   与 vue-funciton-api 不冲突
 
 ## 先来一段简单代码
 
@@ -27,8 +27,8 @@
     })
 </script>
 ```
-> 从上述代码中，我们可以看到，通过vueExecFun()来生成vue的options参数
 
+> 从上述代码中，我们可以看到，通过 vueExecFun()来生成 vue 的 options 参数
 
 ## API
 
@@ -36,70 +36,69 @@
 
 `temp`
 
-- 存放在这里的数据，在vue销毁的时候，也会自动销毁
-- $handleT$打头的变量，销毁时会自动调用 clearTimeout
-- $handleI$打头的变量，销毁时会自动调用 clearInterval
-
+-   存放在这里的数据，在 vue 销毁的时候，也会自动销毁
+-   $handleT$打头的变量，销毁时会自动调用 clearTimeout
+-   $handleI$打头的变量，销毁时会自动调用 clearInterval
 
 ### 最终返回的值
 
 `options`
 
-- 通过其他的各种方法，一般最终的数据都会作用在这个对象上
-- 用户可以通过对本值的设置，达到补全缺失功能
-
+-   通过其他的各种方法，一般最终的数据都会作用在这个对象上
+-   用户可以通过对本值的设置，达到补全缺失功能
 
 ### 绑定数据
 
 `data`
 
-- 最终通过 option的data函数输出
+-   最终通过 option 的 data 函数输出
 
-### 获取当前vue的对象vm
+### 获取当前 vue 的对象 vm
 
 `$vm()`
 
-- 最早请在 beforeCreate 钩子函数触发之后使用，否则返回null
+-   最早请在 beforeCreate 钩子函数触发之后使用，否则返回 null
 
+### 绑定函数的 this 为 vm
 
-### 绑定函数的this为vm
+`$bindNext(fn:function:string, ...args):function`
 
-`$bind(fn:function, ...args):function`
+-   同 function 的 bing 类似，只是 this 已经指向 vm
+-   fn 如果为字符串，实际调用 vm 上的方法
+-   beforeCreate 之前调用输出函数，将返回 Promise，等待 beforeCreate 之后再调用
+-   beforeCreate 之后调用输出函数，返回函数直接 return 值
 
-- 同function的bing类似，只是this已经指向vm
-- 输出的函数，请在 beforeCreate 钩子函数触发之后使用，否则无法定位vm
-
-### 生成name
+### 生成 name
 
 `$name(name:string)`
 
-- 同options的name属性
+-   同 options 的 name 属性
 
 ### 混合
 
 `$mixin(...arg[:options])`
 
-- 同options的mixin
+-   同 options 的 mixin
 
 ### 组件
 
 `$components({...})`
 
-- 同options的components
+-   同 options 的 components
 
 ### 自定义指令
 
 `$directives({...})`
 
-- 同options的directives
+-   同 options 的 directives
 
 ### 组件入参
 
 `$props({...}):obj`
 
-- 同options的props
-- 支持参数setFn，表示设置入参的值的方法
-- 返回同$props入参对应的对象数据
+-   同 options 的 props
+-   支持参数 setFn，表示设置入参的值的方法
+-   返回同\$props 入参对应的对象数据
 
 ```js
 let pv = $props({
@@ -142,8 +141,8 @@ this.$emit("input", "value set")
 
 `$data({...}):obj`
 
-- 同options的data
-- 返回同$data入参对应的对象数据
+-   同 options 的 data
+-   返回同\$data 入参对应的对象数据
 
 ```js
 let dd1 = $data({
@@ -178,8 +177,8 @@ this.val3 = "val3 - 1"
 
 `$computed({...}):obj`
 
-- 同options的computed
-- 返回同$computed入参对应的对象数据
+-   同 options 的 computed
+-   返回同\$computed 入参对应的对象数据
 
 ```js
 let cd1 = $computed({
@@ -228,8 +227,8 @@ this.cVal2 = "cVal2 - 2"
 
 `$filters({...}):obj`
 
-- 同options的filters
-- 返回同$filters入参对应的对象数据
+-   同 options 的 filters
+-   返回同\$filters 入参对应的对象数据
 
 ```js
 let ft1 = $filters({
@@ -245,7 +244,7 @@ ft1.filter1(...)
 {
     filters: {
         filter1 (...) {
-            
+
         }
     }
 }
@@ -256,8 +255,8 @@ ft1.filter1(...)
 
 `$model({...})`
 
-- 同options的model
-- 无返回
+-   同 options 的 model
+-   无返回
 
 ```js
 $model({
@@ -279,30 +278,29 @@ $model({
 
 `$watch({...})`
 
-- 同options的watch, 无返回
-- 同this.$watch，返回一致
+-   同 options 的 watch, 无返回
+-   同 this.\$watch，返回一致
 
 ```js
 $watch({
-    val1 (newVal, oldVal) {
+    val1(newVal, oldVal) {
         // ...
     }
 })
 
-$mounted(function(){
-    let stop = $watch("val2", function(){})
+$mounted(function() {
+    let stop = $watch('val2', function() {})
     // 同
-    let stop = this.$watch("val2", function(){})
+    let stop = this.$watch('val2', function() {})
 })
-
 ```
 
 ### 方法注册
 
 `$methods({...}):obj`
 
-- 同options的methods
-- 返回同$methods入参对应的对象数据
+-   同 options 的 methods
+-   返回同\$methods 入参对应的对象数据
 
 ```js
 let ms = $methods({
@@ -364,28 +362,27 @@ $lifecycle({
 
 ```
 
-- $created(funciton(){}) 同 $lifecycle("created", function(){})
-- $mounted(funciton(){}) 同 $lifecycle("mounted", function(){})
-- $destroyed(funciton(){}) 同 $lifecycle("destroyed", function(){})
-- 其他请使用注册函数
+-   $created(funciton(){}) 同 $lifecycle("created", function(){})
+-   $mounted(funciton(){}) 同 $lifecycle("mounted", function(){})
+-   $destroyed(funciton(){}) 同 $lifecycle("destroyed", function(){})
+-   其他请使用注册函数
 
 ### 事件触发
 
 `$emit(...)`
 
-- 同 this.$emit(...)
-
+-   同 this.\$emit(...)
 
 ### nextTick
 
 `$nextTick(fun:function)`
 
-- 不限使用时机
-- this.$nextTick(fun:function)
+-   不限使用时机
+-   this.\$nextTick(fun:function)
 
 ### 其他插件模式提供的方法
 
-- 通过 vueExecFun.on 注册的其他方法
+-   通过 vueExecFun.on 注册的其他方法
 
 ## 注册插件
 
@@ -401,7 +398,7 @@ Vue.use(vueExecFun.install, function({...}){
 
 `temp`
 
-### 当前实例options
+### 当前实例 options
 
 `options`
 
@@ -409,37 +406,36 @@ Vue.use(vueExecFun.install, function({...}){
 
 `data`
 
-### 获取实例VM
+### 获取实例 VM
 
 `$vm()`
 
-### 绑定方法的this为VM
+### 绑定方法的 this 为 VM
 
-`$bind(fun:function, ...args)`
+`$bindNext(fun:function, ...args)`
 
 ### 在实例函数执行完成后运行
 
 `after(fun:function)`
 
 ```js
-after(function(){
+after(function() {
     // 这里执行时，已经完成 vueExecFun 方法的执行了
 })
-
 ```
 
-### vueExecFun方法参数
+### vueExecFun 方法参数
 
 `fnArg`
 
-- 通过次参数属性增加，可以增加vueExecFun中回调函数的参数
-- 注意：after之后设置，会导致在参数无法获取到
+-   通过次参数属性增加，可以增加 vueExecFun 中回调函数的参数
+-   注意：after 之后设置，会导致在参数无法获取到
 
 ### 生命周期函数绑定
 
 `lifecycle({...})`
 
-- 同 $lifecycle
+-   同 \$lifecycle
 
 ### 自定义插件中的生命周期函数绑定
 
@@ -451,19 +447,18 @@ let life = makeLifecycle()
 // fnArg 新增属性 $life $before $ready
 Object.assign(fnArg, {
     $life: life.on,
-    $before: life.currying("before"),
-    $ready: life.currying("ready")
+    $before: life.currying('before'),
+    $ready: life.currying('ready')
 })
 
 after(function() {
     if (life.has()) {
         // 如果有钩子函数，就绑定到options
-        life.make("life")
+        life.make('life')
     }
 
     // console.log("options", options)
 })
-
 ```
 
 ### 制作新的方法
@@ -475,7 +470,7 @@ after(function() {
 
 fnArg.$props = setter({
     // 绑定options 属性 为 props
-    prot: "props",
+    prot: 'props',
     // 返回值属性只读
     isFreeze: true,
     // 键值对
@@ -485,12 +480,12 @@ fnArg.$props = setter({
                 return vm ? vm[key] : null
             }
         }
-        let setFn = ""
-        if (toString.call(value).toLowerCase() == "[object object]") {
+        let setFn = ''
+        if (toString.call(value).toLowerCase() == '[object object]') {
             // 增加对 setFn 键值的支持
             setFn = value.setFn
             if (setFn) {
-                if (typeof setFn != "function") {
+                if (typeof setFn != 'function') {
                     property.set = function(val) {
                         $emit(setFn, val)
                     }
@@ -506,18 +501,18 @@ fnArg.$props = setter({
 
 fnArg.$components = setter({
     // 绑定options 属性 为 components
-    prot: "components",
+    prot: 'components',
     // 无需返回任何值
     sBack: false
 }).on
 
 fnArg.$methods = setter({
-    prot: "methods",
+    prot: 'methods',
     isFreeze: true,
-    format({value}) {
-        if (typeof value == "function") {
+    format({ value }) {
+        if (typeof value == 'function') {
             // 如果是funciton 绑定函数的this
-            return $bind(value)
+            return $bindNext(value)
         }
         return value
     }
@@ -545,7 +540,7 @@ function setter({
         }
         // 返回的数据
         let back = (isBack && {}) || null
-        if (typeof key == "string") {
+        if (typeof key == 'string') {
             key = { [key]: val }
         }
         for (let n in key) {
@@ -579,33 +574,30 @@ function setter({
         on: setterOn
     }
 }
-
 ```
 
-### setter常用format方法
+### setter 常用 format 方法
 
 `fnToBindVM({value})`
 
-> 如果传入的value值为函数，将此函数this绑定为当前vue的vm
+> 如果传入的 value 值为函数，将此函数 this 绑定为当前 vue 的 vm
 
-### 快速定位到vue的原型方法
+### 快速定位到 vue 的原型方法
 
 > 如果没初始化完成，会自动延后触发
 
 `quickVueNext(key:string):function`
 
 ```js
-
-fnArg.$nextTick = quickVueNext("$nextTick")
-
+fnArg.$nextTick = quickVueNext('$nextTick')
 ```
 
-> 如果Vue没初始化，会暂存，知道初始化完成后在自动出发
+> 如果 Vue 没初始化，会暂存，知道初始化完成后在自动出发
 
-### options的属性设置
+### options 的属性设置
 
 `setProt`
 
 ```js
-fnArg.$name = setProt("name")
+fnArg.$name = setProt('name')
 ```
