@@ -63,13 +63,29 @@ function vueFun(initFn) {
         return opt
     }
 
+    let quickNextArr = []
     function $bind(fn, ...arg) {
         return function() {
             if (!vm) {
-                warn('after')
+                quickNextArr.push({
+                    fn,
+                    args: arguments
+                })
                 return
             }
             fn.apply(vm, arg.concat(arguments))
+        }
+    }
+    function quickVueNext(key) {
+        return function() {
+            if (!vm) {
+                quickNextArr.push({
+                    key: key,
+                    args: arguments
+                })
+                return
+            }
+            return vm[key](...arguments)
         }
     }
 
@@ -277,32 +293,18 @@ function vueFun(initFn) {
         beforeRouteLeave
     */
 
-    let quickNextArr = []
-    function quickVueNext(key) {
-        // let vKey = key.replace(/^\$+/, "")
-        return function() {
-            let vl = vm
-            // if (!vl && Vue && typeof Vue[vKey] == "function") {
-            //     key = vKey
-            //     vl = Vue
-            // }
-            if (!vl) {
-                quickNextArr.push({
-                    key: key,
-                    args: arguments
-                })
-                return
-            }
-            return vl[key](...arguments)
-        }
-    }
-
     let lifecycle = makeLifecycle()
     lifecycle.on('beforeCreate', function() {
         vm = this
         while (quickNextArr.length) {
             let toDo = quickNextArr.shift()
-            vm[toDo.key](...toDo.args)
+            let arg = toDo.args || []
+            if (toDo.fn) {
+                toDo.fn.apply(vm, arg)
+            }
+            if (toDo.key) {
+                vm[toDo.key](...arg)
+            }
         }
     })
     lifecycle.on('created', function() {
