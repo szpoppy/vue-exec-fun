@@ -64,28 +64,27 @@ function vueFun(initFn) {
     }
 
     let quickNextArr = []
-    function $bind(fn, ...arg) {
-        return function() {
-            if (!vm) {
-                quickNextArr.push({
-                    fn,
-                    args: arguments
-                })
-                return
-            }
-            fn.apply(vm, arg.concat(arguments))
-        }
-    }
     function quickVueNext(key) {
-        return function() {
-            if (!vm) {
-                quickNextArr.push({
-                    key: key,
-                    args: arguments
-                })
-                return
-            }
-            return vm[key](...arguments)
+        return function(){
+            return new Promise(function(resolve){
+                if (!vm) {
+                    quickNextArr.push({
+                        resolve,
+                        key: key,
+                        args: arguments
+                    })
+                    return
+                }
+                if(typeof key == "function") {
+                    resolve(fn.apply(vm, arg.concat(arguments)))
+                    return 
+                }
+                if(typeof key == "string") {
+                    resolve(vm[key](...arguments))
+                    return
+                }
+                resolve(null)
+            })
         }
     }
 
@@ -145,7 +144,7 @@ function vueFun(initFn) {
 
     function fnToBindVM({ value }) {
         if (typeof value == 'function') {
-            return $bind(value)
+            return quickVueNext(value)
         }
         return value
     }
@@ -300,10 +299,10 @@ function vueFun(initFn) {
             let toDo = quickNextArr.shift()
             let arg = toDo.args || []
             if (toDo.fn) {
-                toDo.fn.apply(vm, arg)
+                toDo.resolve(toDo.fn.apply(vm, arg))
             }
             if (toDo.key) {
-                vm[toDo.key](...arg)
+                toDo.resolve(vm[toDo.key](...arg))
             }
         }
     })
@@ -342,7 +341,7 @@ function vueFun(initFn) {
         // 数据
         data: optData,
         $vm,
-        $bind,
+        $bind:quickVueNext,
         $name: setProt('name'),
         $mixin: mixin,
         $components: setter({
@@ -439,7 +438,6 @@ function vueFun(initFn) {
             // 数据
             data: optData,
             $vm,
-            $bind,
             after: function(afterFn) {
                 afterArr.push(afterFn)
             },
