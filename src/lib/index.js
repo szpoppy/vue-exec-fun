@@ -20,7 +20,7 @@ function assign(data1, data2) {
 // eslint-disable-next-line
 let Vue
 let pluginArr = []
-function vueFunOn(initFn) {
+export function vueFunOn(initFn) {
     pluginArr.push(initFn)
 }
 
@@ -105,7 +105,7 @@ function vueFun(initFn) {
     }
 
     // 代理
-    function $vm(key, arg) {
+    function $vm(key, args) {
         if (!vm) {
             return null
         }
@@ -117,10 +117,11 @@ function vueFun(initFn) {
         if (arg === undefined) {
             return val
         }
-        return val.call(vm, arg)
+        return val.apply(vm, args)
     }
 
     let optData = {}
+    let optSetup = {}
     function dataProperty(back, key) {
         Object.defineProperty(back, key, {
             get() {
@@ -134,27 +135,40 @@ function vueFun(initFn) {
             }
         })
     }
-    function $data(key, val) {
-        let opt = vm || optData
+
+    function setData(data, key, val) {
+        let opt = vm || data
         if (typeof key == 'string') {
             if (val === undefined) {
                 return getSafe(key, opt)
             }
             key = { [key]: val }
         }
-
         let back = {}
-        assign(optData, key)
-        Object.keys(key).forEach(function(n) {
-            dataProperty(back, n)
-        })
+        for(let n in key) {
+            if(hasOwnProperty.call(key, n)) {
+                data[n] = key[n]
+                dataProperty(back, n)
+            }
+        }
         // console.log(back)
         return Object.freeze(back)
     }
+
+    function $data(key, val) {
+        return setData(optData, key, val)
+    }
+    function $setup(key, val) {
+        return setData(optSetup, key, val)
+    }
+
     let options = {
         data() {
             // console.log("optData", optData)
             return optData
+        },
+        setup () {
+            return optSetup
         }
     }
 
@@ -349,6 +363,7 @@ function vueFun(initFn) {
         options,
         // 数据
         data: optData,
+        setup: optSetup,
         $vm,
         $bindNext: quickVueNext,
         $name: setProt('name'),
@@ -390,6 +405,7 @@ function vueFun(initFn) {
             }
         }).on,
         $data,
+        $setup,
         $computed: setter({
             prot: 'computed',
             isFreeze: true,
@@ -441,12 +457,6 @@ function vueFun(initFn) {
     let afterArr = []
     pluginArr.forEach(function(pluginFn) {
         pluginFn({
-            temp,
-            // 参数
-            options,
-            // 数据
-            data: optData,
-            $vm,
             after: function(afterFn) {
                 afterArr.push(afterFn)
             },

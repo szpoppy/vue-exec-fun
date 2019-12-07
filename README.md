@@ -394,22 +394,6 @@ Vue.use(vueExecFun.install, function({...}){
 })
 ```
 
-### 临时变量
-
-`temp`
-
-### 当前实例 options
-
-`options`
-
-### 数据
-
-`data`
-
-### 获取实例 VM
-
-`$vm()`
-
 ### 绑定方法的 this 为 VM
 
 `$bindNext(fun:function, ...args)`
