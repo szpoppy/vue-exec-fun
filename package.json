@@ -1,11 +1,13 @@
 {
     "name": "vue-exec-fun",
-    "version": "1.0.23",
+    "version": "1.1.3",
     "description": "函数式方式写vue",
     "main": "dist/lib/index.js",
     "author": "张钰峰",
     "license": "MIT",
-    "dependencies": {},
+    "dependencies": {
+        "vue-life": "^1.2.6"
+    },
     "devDependencies": {
         "babel-plugin-transform-export-extensions": "^6.22.0",
         "babel-preset-env": "^1.6.1",

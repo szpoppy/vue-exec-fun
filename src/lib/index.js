@@ -114,7 +114,7 @@ function vueFun(initFn) {
         }
 
         let val = getSafe(key, vm)
-        if (arg === undefined) {
+        if (args === undefined) {
             return val
         }
         return val.apply(vm, args)
@@ -145,12 +145,10 @@ function vueFun(initFn) {
             key = { [key]: val }
         }
         let back = {}
-        for(let n in key) {
-            if(hasOwnProperty.call(key, n)) {
-                data[n] = key[n]
-                dataProperty(back, n)
-            }
-        }
+        assign(data, key)
+        Object.keys(key).forEach(function(n) {
+            dataProperty(back, n)
+        })
         // console.log(back)
         return Object.freeze(back)
     }
@@ -167,9 +165,64 @@ function vueFun(initFn) {
             // console.log("optData", optData)
             return optData
         },
-        setup () {
+        setup() {
             return optSetup
         }
+    }
+
+    function $setOpt(prot, key, val) {
+        if (isInit) {
+            warn()
+            return
+        }
+        let format, isFreeze, isBack, def
+        if (prot && typeof prot != 'string') {
+            format = prot.format
+            isFreeze = prot.isFreeze
+            isBack = prot.isBack
+            if (prot.def) {
+                def = prot.def
+            }
+            prot = prot.prot
+        }
+        if (isFreeze && isBack === undefined) {
+            isBack = true
+        }
+        let data = key
+        if (typeof key == 'string') {
+            data = { [key]: val }
+            val = null
+            key = null
+        }
+
+        let inOpt = options[prot]
+        if (!inOpt) {
+            inOpt = options[prot] = def || {}
+        }
+
+        let back = (isBack && {}) || null
+
+        for (let n in data) {
+            if (hasOwnProperty.call(data, n)) {
+                inOpt[n] = data[n]
+                if (back) {
+                    if (format) {
+                        let bkVal = format({ value: data[n], backData: back, key: n, opt: inOpt })
+                        // console.log(prot, "bkVal", bkVal)
+                        if (bkVal !== undefined) {
+                            back[n] = bkVal
+                        }
+                    } else {
+                        back[n] = data[n]
+                    }
+                }
+            }
+        }
+
+        if (back && isFreeze) {
+            return Object.freeze(back)
+        }
+        return back
     }
 
     function fnToBindVM({ value }) {
@@ -179,64 +232,32 @@ function vueFun(initFn) {
         return value
     }
 
-    function setter({
-        // options 属性
-        prot,
-        format,
-        isFreeze,
-        isBack = true
-    }) {
-        let opt = {}
-
-        function setterOn(key, val) {
-            if (isInit) {
-                warn()
-                return
-            }
-            if (prot && !options[prot]) {
-                options[prot] = opt
-            }
-            let back = (isBack && {}) || null
-            if (typeof key == 'string') {
-                key = { [key]: val }
-            }
-            for (let n in key) {
-                // console.log(prot, key, n, hasOwnProperty.call(key, n), back, format)
-                if (hasOwnProperty.call(key, n)) {
-                    opt[n] = key[n]
-                    if (back) {
-                        if (format) {
-                            let bkVal = format({ value: key[n], backData: back, key: n, opt })
-                            // console.log(prot, "bkVal", bkVal)
-                            if (bkVal !== undefined) {
-                                back[n] = bkVal
-                            }
-                        } else {
-                            back[n] = val
-                        }
-                    }
-                }
-            }
-            if (back && isFreeze) {
-                return Object.freeze(back)
-            }
-            return back
-        }
-
-        return {
-            data: opt,
-            on: setterOn
+    function setOpt(prot) {
+        return function(key, val) {
+            return $setOpt(prot, key, val)
         }
     }
 
-    function setProt(prot, format) {
+    function $setProt(prot, val) {
+        if (isInit) {
+            warn()
+            return
+        }
+
+        let format
+        if (typeof prot != 'string' && prot) {
+            format = prot.format
+            prot = prot.prot
+        }
+
+        options[prot] = val
+
+        return format ? format(val) : val
+    }
+
+    function setProt(prot) {
         return function(val) {
-            if (isInit) {
-                warn()
-                return
-            }
-            options[prot] = val
-            return format ? format(val) : val
+            return $setProt(prot, val)
         }
     }
 
@@ -260,6 +281,9 @@ function vueFun(initFn) {
         let lifecycles = {}
 
         let back = {
+            get() {
+                return lifecycles
+            },
             on(key, fn) {
                 if (typeof key == 'string') {
                     let lc = lifecycles[key]
@@ -275,11 +299,12 @@ function vueFun(initFn) {
 
                 return back
             },
-            make(opt) {
-                if (typeof opt == 'string') {
-                    opt = options[opt]
+            make(prot = {}) {
+                let opt = prot
+                if (typeof prot == 'string') {
+                    opt = options[prot]
                     if (!opt) {
-                        opt = options[opt] = {}
+                        opt = options[prot] = {}
                     }
                 }
                 for (let n in lifecycles) {
@@ -364,21 +389,25 @@ function vueFun(initFn) {
         // 数据
         data: optData,
         setup: optSetup,
+
+        // 通用
+        $setOpt,
+        $setProt,
         $vm,
         $bindNext: quickVueNext,
         $name: setProt('name'),
         $mixin: mixin,
-        $components: setter({
+        $components: setOpt({
             prot: 'components',
             sBack: false
-        }).on,
-        $directives: setter({
+        }),
+        $directives: setOpt({
             prot: 'directives',
             isBack: false
-        }).on,
+        }),
 
         // 参数
-        $props: setter({
+        $props: setOpt({
             prot: 'props',
             isFreeze: true,
             format({ backData, key, value }) {
@@ -403,10 +432,10 @@ function vueFun(initFn) {
                 }
                 Object.defineProperty(backData, key, property)
             }
-        }).on,
+        }),
         $data,
         $setup,
-        $computed: setter({
+        $computed: setOpt({
             prot: 'computed',
             isFreeze: true,
             format({ backData, key }) {
@@ -421,28 +450,28 @@ function vueFun(initFn) {
                     }
                 })
             }
-        }).on,
-        $filters: setter({
+        }),
+        $filters: setOpt({
             prot: 'filters',
             isFreeze: true,
             format: fnToBindVM
-        }).on,
-        $model: setter({
+        }),
+        $model: setOpt({
             prot: 'model',
             isBack: false
-        }).on,
+        }),
         $watch: initOrLatter(
-            setter({
+            setOpt({
                 prot: 'watch',
                 isBack: false
-            }).on,
+            }),
             quickVueNext('$watch')
         ),
-        $methods: setter({
+        $methods: setOpt({
             prot: 'methods',
             isFreeze: true,
             format: fnToBindVM
-        }).on,
+        }),
 
         $lifecycle: lifecycle.on,
         $created: lifecycle.currying('created'),
@@ -463,10 +492,10 @@ function vueFun(initFn) {
             fnArg,
             lifecycle,
             makeLifecycle,
-            setter,
+            setOpt,
+            setProt,
             fnToBindVM,
-            quickVueNext,
-            setProt
+            quickVueNext
         })
     })
 
@@ -482,6 +511,7 @@ function vueFun(initFn) {
     }
 
     isInit = true
+    console.log(options)
     return options
 }
 

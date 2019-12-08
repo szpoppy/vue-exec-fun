@@ -53,6 +53,10 @@
 
 -   最终通过 option 的 data 函数输出
 
+`setup`
+
+-   最终通过 option 的 setup 函数输出
+
 ### 获取当前 vue 的对象 vm
 
 `$vm()`
@@ -172,6 +176,13 @@ this.val1 = "val1 - 1"
 this.val3 = "val3 - 1"
 
 ```
+
+### 原生函数式 setup 中数据输出
+
+`$setup({...}):obj` Vue3.0
+
+-   同 options 的 setup
+-   返回同\$setup 入参对应的对象数据
 
 ### 计算属性设置
 
@@ -380,11 +391,57 @@ $lifecycle({
 -   不限使用时机
 -   this.\$nextTick(fun:function)
 
+### 设置 options 中下级属性
+
+`$setOpt(prot:string:obj, data:obj)`
+
+-   `prot:string` 作为 options 的属性值
+-   `prot:obj`
+    -   `prot.prot` 作为 options 的属性值
+    -   `prot.format` 作为 data 中的值的格式化函数
+    -   `prot.isFreeze` 返回值是否只读
+    -   `prot.isBack` 是否有返回值
+    -   `prot.def` options\[prot\] 的默认值
+-   data options\[prot\]中的的值
+
+```js
+// ==> {unicom: {setName(){}}}
+$setOpt('unicom', {
+    setUserName() {}
+})
+
+$setOpt(
+    {
+        prot: 'unicom',
+        // 无返回值
+        isBack: false
+    },
+    {
+        setUserName() {}
+    }
+)
+```
+
+### 设置 options 的属性
+
+`$setProt(prot:string:obj, data)`
+
+-   `prot:string` 作为 options 的属性值
+-   `prot:obj`
+    -   `prot.prot` 作为 options 的属性值
+    -   `prot.format` 作为 data 中的值的格式化函数
+-   data options\[prot\]中的的值
+
+```js
+// ==> {name: "page-index"}
+$setProt('name', 'page-index')
+```
+
 ### 其他插件模式提供的方法
 
 -   通过 vueExecFun.on 注册的其他方法
 
-## 注册插件
+## 注册插件 I
 
 ```js
 import Vue from "Vue"
@@ -447,12 +504,12 @@ after(function() {
 
 ### 制作新的方法
 
-`setter({...})`
+`setOpt({...})`
 
 ```js
 // 不会讲述，来两个实例吧
 
-fnArg.$props = setter({
+fnArg.$props = setOpt({
     // 绑定options 属性 为 props
     prot: 'props',
     // 返回值属性只读
@@ -481,16 +538,16 @@ fnArg.$props = setter({
         }
         Object.defineProperty(backData, key, property)
     }
-}).on
+})
 
-fnArg.$components = setter({
+fnArg.$components = setOpt({
     // 绑定options 属性 为 components
     prot: 'components',
     // 无需返回任何值
     sBack: false
-}).on
+})
 
-fnArg.$methods = setter({
+fnArg.$methods = setOpt({
     prot: 'methods',
     isFreeze: true,
     format({ value }) {
@@ -500,67 +557,72 @@ fnArg.$methods = setter({
         }
         return value
     }
-}).on
+})
 
-// setter 实现方式
-function setter({
-    // options 属性
-    prot,
-    format,
-    isFreeze,
-    isBack = true
-}) {
-    let opt = {}
+// setOpt 和 $setOpt 实现方式
+function $setOpt(prot, key, val) {
+    if (isInit) {
+        warn()
+        return
+    }
+    let format, isFreeze, isBack, def
+    if (prot && typeof prot != 'string') {
+        format = prot.format
+        isFreeze = prot.isFreeze
+        isBack = prot.isBack
+        if (prot.def) {
+            def = prot.def
+        }
+        prot = prot.prot
+    }
+    if (isFreeze && isBack === undefined) {
+        isBack = true
+    }
+    let data = key
+    if (typeof key == 'string') {
+        data = { [key]: val }
+        val = null
+        key = null
+    }
 
-    function setterOn(key, val) {
-        if (isInit) {
-            // options 已经完成生成
-            warn()
-            return
-        }
-        if (prot && !options[prot]) {
-            // 属性设置
-            options[prot] = opt
-        }
-        // 返回的数据
-        let back = (isBack && {}) || null
-        if (typeof key == 'string') {
-            key = { [key]: val }
-        }
-        for (let n in key) {
-            // console.log(prot, key, n, hasOwnProperty.call(key, n), back, format)
-            if (hasOwnProperty.call(key, n)) {
-                opt[n] = key[n]
-                if (back) {
-                    if (format) {
-                        // 返回数据的格式化
-                        let bkVal = format({ value: key[n], backData: back, key: n, opt })
-                        // console.log(prot, "bkVal", bkVal)
-                        if (bkVal !== undefined) {
-                            // 格式化函数有返回值，直接赋值
-                            back[n] = bkVal
-                        }
-                    } else {
-                        back[n] = val
+    let inOpt = options[prot]
+    if (!inOpt) {
+        inOpt = options[prot] = def || {}
+    }
+
+    let back = (isBack && {}) || null
+
+    for (let n in data) {
+        if (hasOwnProperty.call(data, n)) {
+            inOpt[n] = data[n]
+            if (back) {
+                if (format) {
+                    let bkVal = format({ value: data[n], backData: back, key: n, opt: inOpt })
+                    // console.log(prot, "bkVal", bkVal)
+                    if (bkVal !== undefined) {
+                        back[n] = bkVal
                     }
+                } else {
+                    back[n] = data[n]
                 }
             }
         }
-        if (back && isFreeze) {
-            // 只读属性设置
-            return Object.freeze(back)
-        }
-        return back
     }
 
-    return {
-        data: opt,
-        on: setterOn
+    if (back && isFreeze) {
+        return Object.freeze(back)
+    }
+    return back
+}
+
+function setOpt(prot) {
+    return function(key, val) {
+        return $setOpt(prot, key, val)
     }
 }
 ```
 
-### setter 常用 format 方法
+### setOpt 常用 format 方法
 
 `fnToBindVM({value})`
 
