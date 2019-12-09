@@ -67,7 +67,7 @@ function vueFun(initFn) {
     function doVueNext({ resolve, key, args, reject }) {
         let fn
         if (typeof key == 'string') {
-            fn = vm[key]
+            fn = getSafe(key, vm)
         } else if (typeof key == 'function') {
             fn = key
         }
