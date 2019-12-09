@@ -65,19 +65,37 @@ function vueFun(initFn) {
 
     let quickNextArr = []
     function doVueNext({ resolve, key, args, reject }) {
-        let fn
-        if (typeof key == 'string') {
-            fn = getSafe(key, vm)
-        } else if (typeof key == 'function') {
-            fn = key
-        }
-
-        if (!fn) {
+        if (!key) {
             reject && reject(null)
             return null
         }
 
-        let val = fn.apply(vm, args)
+        if (typeof key == 'function') {
+            // 函数
+            let val = fn.apply(vm, args)
+            if (resolve) {
+                resolve(val)
+            }
+
+            return val
+        }
+
+        let arr = key.split('.')
+        let method = arr.pop()
+        let parent = vm
+        for (let i = 0; i < arr.length; i += 1) {
+            parent = parent[arr[i]]
+            if (parent == null) {
+                break
+            }
+        }
+
+        if (!parent || !parent[method]) {
+            reject && reject(null)
+            return null
+        }
+
+        let val = parent[method](...args)
         if (resolve) {
             resolve(val)
         }
