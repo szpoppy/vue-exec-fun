@@ -37,8 +37,13 @@
 `temp`
 
 -   存放在这里的数据，在 vue 销毁的时候，也会自动销毁
--   $handleT$打头的变量，销毁时会自动调用 clearTimeout
--   $handleI$打头的变量，销毁时会自动调用 clearInterval
+-   $T$打头的变量，销毁时会自动调用 clearTimeout
+-   $I$打头的变量，销毁时会自动调用 clearInterval
+-   $D$打头的变量，销毁时会自动调用 存入值的 destroy
+
+`tempFn`
+
+-   存放 T I D 格式化函数的对象，需要新的清理函数，可以在这里定义
 
 ### 最终返回的值
 

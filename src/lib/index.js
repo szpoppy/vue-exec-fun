@@ -31,6 +31,18 @@ export function vueFunInstall(vue, initFn) {
     }
 }
 
+export let vueFunTempClearFn = {
+    T(val) {
+        clearTimeout(val)
+    },
+    I(val) {
+        clearInterval(val)
+    },
+    D(val) {
+        val.destroy()
+    }
+}
+
 let msgOpt = {
     before: 'vue已经初始化，请在初始化之前调用',
     after: 'vue还没初始化，请在created之后调用'
@@ -375,17 +387,15 @@ function vueFun(initFn) {
     lifecycle.on('created', function() {
         vm = this
     })
+    let tempFn = Object.create(vueFunTempClearFn)
     lifecycle.on('destroyed', function() {
         vm = null
         isInit = false
 
         // 自动清理临时字段中数据
         for (let n in temp) {
-            if (n.indexOf('$handleT$') == 0) {
-                clearTimeout(temp[n])
-            }
-            if (n.indexOf('$handleI$') == 0) {
-                clearInterval(temp[n])
+            if (/^\$(w+)\$/g.test(n)) {
+                tempFn[RegExp.$1] && tempFn[RegExp.$1](temp[n], n, temp)
             }
             temp[n] = undefined
             delete temp[n]
@@ -402,6 +412,7 @@ function vueFun(initFn) {
 
     let fnArg = {
         temp,
+        tempFn,
         // 参数
         options,
         // 数据
@@ -529,11 +540,11 @@ function vueFun(initFn) {
     }
 
     isInit = true
-    console.log(options)
     return options
 }
 
 vueFun.on = vueFunOn
 vueFun.install = vueFunInstall
+vueFun.tempClearFn = vueFunTempClearFn
 
 export default vueFun
