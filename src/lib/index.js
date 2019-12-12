@@ -76,15 +76,44 @@ function vueFun(initFn) {
     }
 
     let quickNextArr = []
-    function doVueNext({ resolve, key, args, reject }) {
+    function doVueNext({ resolve, key, isEx, arg1, arg2, reject }) {
         if (!key) {
             reject && reject(null)
             return null
         }
 
+        let parent = vm
+        if (typeof key == 'string') {
+            let arr = key.split('.')
+            let method = arr.pop()
+            for (let i = 0; i < arr.length; i += 1) {
+                parent = parent[arr[i]]
+                if (parent == null) {
+                    break
+                }
+            }
+
+            if(isEx && arg2.length == 0) {
+                if (resolve) {
+                    resolve(parent)
+                }
+        
+                return parent
+            }
+
+            if (!parent || !parent[method]) {
+                reject && reject(null)
+                return null
+            }
+
+            key = parent[method]
+        }
+
+        let args = arg1.concat(arg2)
+
         if (typeof key == 'function') {
             // 函数
-            let val = fn.apply(vm, args)
+            let val = key.apply(parent, args)
             if (resolve) {
                 resolve(val)
             }
@@ -92,35 +121,27 @@ function vueFun(initFn) {
             return val
         }
 
-        let arr = key.split('.')
-        let method = arr.pop()
-        let parent = vm
-        for (let i = 0; i < arr.length; i += 1) {
-            parent = parent[arr[i]]
-            if (parent == null) {
-                break
-            }
-        }
-
-        if (!parent || !parent[method]) {
-            reject && reject(null)
-            return null
-        }
-
-        let val = parent[method](...args)
         if (resolve) {
             resolve(val)
         }
 
-        return val
+        return key
     }
 
-    function quickVueNext(key, ...arg) {
-        return function(...args) {
-            args.unshift(...arg)
+    function quickVueNext(key, ...arg1) {
+        let isEx = false
+        if(typeof key == "string") {
+            key = key.replace(/\+(\w+)$/, function(s0, s1) {
+                isEx = true
+                return "." + s1
+            })
+        }
+        return function(...arg2) {
             let todo = {
+                isEx,
                 key,
-                args
+                arg1,
+                arg2
             }
 
             if (vm) {
