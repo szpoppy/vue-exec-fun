@@ -387,20 +387,6 @@ function vueFun(initFn) {
     lifecycle.on('created', function() {
         vm = this
     })
-    let tempFn = Object.create(vueFunTempClearFn)
-    lifecycle.on('destroyed', function() {
-        vm = null
-        isInit = false
-
-        // 自动清理临时字段中数据
-        for (let n in temp) {
-            if (/^\$(w+)\$/g.test(n)) {
-                tempFn[RegExp.$1] && tempFn[RegExp.$1](temp[n], n, temp)
-            }
-            temp[n] = undefined
-            delete temp[n]
-        }
-    })
 
     function initOrLatter(fn1, fn2) {
         return function() {
@@ -533,6 +519,24 @@ function vueFun(initFn) {
     afterArr.forEach(function(afterFn) {
         afterFn(fnArg)
     })
+
+    // destroyed 最后加入
+    let tempFn = Object.create(vueFunTempClearFn)
+    lifecycle.on('destroyed', function() {
+        vm = null
+        isInit = false
+
+        // 自动清理临时字段中数据
+        for (let n in temp) {
+            let val = n.match(/^\$(w+)\$/)
+            if (val) {
+                tempFn[val[1]] && tempFn[val[1]](temp[n], n, temp)
+            }
+            temp[n] = undefined
+            delete temp[n]
+        }
+    })
+
     lifecycle.make(options)
 
     if (mixins.length) {
