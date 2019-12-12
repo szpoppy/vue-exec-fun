@@ -23,9 +23,26 @@ let pluginArr = []
 export function vueFunOn(initFn) {
     pluginArr.push(initFn)
 }
-
+let beforeFns = {}
+let execFunIndex = 100
+let mergeKey = '_#_exec_fun__'
+function beforeFn() {
+    let key = this.$options[mergeKey]
+    key && beforeFns[key] && beforeFns[key].call(this)
+}
 export function vueFunInstall(vue, initFn) {
+    if (Vue) {
+        return
+    }
     Vue = vue
+    Vue.mixin({
+        beforeCreate: beforeFn,
+        created: beforeFn
+    })
+    Vue.config.optionMergeStrategies[mergeKey] = function(pVal, nVal) {
+        return nVal
+    }
+
     if (initFn) {
         pluginArr.push(initFn)
     }
@@ -47,8 +64,8 @@ let msgOpt = {
     before: 'vue已经初始化，请在初始化之前调用',
     after: 'vue还没初始化，请在created之后调用'
 }
-function warn(msg = 'before') {
-    console.warn(msgOpt[msg] || msg || '')
+function warn(key = '', msg = 'before') {
+    console.warn(key, msgOpt[msg] || msg || '')
 }
 
 function vueFun(initFn) {
@@ -75,10 +92,8 @@ function vueFun(initFn) {
         return opt
     }
 
-    let quickNextArr = []
-    function doVueNext({ resolve, key, isEx, arg1, arg2, reject }) {
+    function doVueNext({ key, isEx, arg1, arg2 }) {
         if (!key) {
-            reject && reject(null)
             return null
         }
 
@@ -93,16 +108,11 @@ function vueFun(initFn) {
                 }
             }
 
-            if(isEx && arg2.length == 0) {
-                if (resolve) {
-                    resolve(parent)
-                }
-        
+            if (isEx && arg2.length == 0) {
                 return parent
             }
 
             if (!parent || !parent[method]) {
-                reject && reject(null)
                 return null
             }
 
@@ -114,26 +124,18 @@ function vueFun(initFn) {
         if (typeof key == 'function') {
             // 函数
             let val = key.apply(parent, args)
-            if (resolve) {
-                resolve(val)
-            }
 
             return val
         }
-
-        if (resolve) {
-            resolve(val)
-        }
-
         return key
     }
 
     function quickVueNext(key, ...arg1) {
         let isEx = false
-        if(typeof key == "string") {
+        if (typeof key == 'string') {
             key = key.replace(/\+(\w+)$/, function(s0, s1) {
                 isEx = true
-                return "." + s1
+                return '.' + s1
             })
         }
         return function(...arg2) {
@@ -147,11 +149,8 @@ function vueFun(initFn) {
             if (vm) {
                 return doVueNext(todo)
             }
-            return new Promise(function(resolve, reject) {
-                todo.reject = reject
-                todo.resolve = resolve
-                quickNextArr.push(todo)
-            })
+            warn(key, 'after')
+            return null
         }
     }
 
@@ -173,14 +172,14 @@ function vueFun(initFn) {
 
     let optData = {}
     let optSetup = {}
-    function dataProperty(back, key) {
+    function dataProperty(back, key, data) {
         Object.defineProperty(back, key, {
             get() {
-                let opt = vm || optData
+                let opt = vm || data
                 return opt[key]
             },
             set(val) {
-                let opt = vm || optData
+                let opt = vm || data
                 // console.log("---------------", opt, key)
                 opt[key] = val
             }
@@ -198,7 +197,7 @@ function vueFun(initFn) {
         let back = {}
         assign(data, key)
         Object.keys(key).forEach(function(n) {
-            dataProperty(back, n)
+            dataProperty(back, n, data)
         })
         // console.log(back)
         return Object.freeze(back)
@@ -223,7 +222,7 @@ function vueFun(initFn) {
 
     function $setOpt(prot, key, val) {
         if (isInit) {
-            warn()
+            warn('[$setOpt]')
             return
         }
         let format, isFreeze, isBack, def
@@ -291,7 +290,7 @@ function vueFun(initFn) {
 
     function $setProt(prot, val) {
         if (isInit) {
-            warn()
+            warn('[$setProt]')
             return
         }
 
@@ -315,7 +314,7 @@ function vueFun(initFn) {
     let mixins = []
     function mixin(...arg) {
         if (isInit) {
-            warn()
+            warn('[mixin]')
             return
         }
         mixins.push(...arg)
@@ -399,15 +398,17 @@ function vueFun(initFn) {
     */
 
     let lifecycle = makeLifecycle()
-    lifecycle.on('beforeCreate', function() {
+    function getVM() {
         vm = this
-        while (quickNextArr.length) {
-            doVueNext(quickNextArr.shift())
-        }
-    })
-    lifecycle.on('created', function() {
-        vm = this
-    })
+    }
+    let execFunKey = (options[mergeKey] = execFunKey = '#' + execFunIndex++)
+    if (Vue) {
+        // 只是为了 提前会的 this
+        beforeFns[execFunKey] = getVM
+    } else {
+        lifecycle.on('beforeCreate', getVM)
+        lifecycle.on('created', getVM)
+    }
 
     function initOrLatter(fn1, fn2) {
         return function() {

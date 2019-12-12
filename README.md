@@ -74,8 +74,7 @@
 
 -   同 function 的 bing 类似，只是 this 已经指向 vm
 -   fn 如果为字符串，实际调用 vm 上的方法
--   beforeCreate 之前调用输出函数，将返回 Promise，等待 beforeCreate 之后再调用
--   beforeCreate 之后调用输出函数，返回函数直接 return 值
+-   返回函数直接 return 值
 
 ### 生成 name
 
