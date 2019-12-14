@@ -11,7 +11,7 @@
 
 -   外挂方式
 -   提供另一种方式的函数式方式写 vue 代码
--   与 vue-funciton-api 不冲突
+-   与 vue-funciton-api 不冲突 -_-
 
 ## 先来一段简单代码
 
