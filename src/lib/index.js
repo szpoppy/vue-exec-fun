@@ -419,8 +419,27 @@ function vueFun(initFn) {
         beforeRouteLeave
     */
 
+    // 清理
+    let tempFn = Object.create(vueFunTempClearFn)
+    let clearTempHandle
+    function clearTemp() {
+        clearTimeout(clearTempHandle)
+        for (let n in temp) {
+            let val = n.match(/^\$(w+)\$/)
+            if (val) {
+                tempFn[val[1]] && tempFn[val[1]](temp[n], n, temp)
+            }
+            temp[n] = undefined
+            delete temp[n]
+        }
+    }
+
     let lifecycle = makeLifecycle()
     function getVM() {
+        if (!vm) {
+            // 开始前先清理
+            clearTemp()
+        }
         vm = this
     }
     let execFunKey = (options[mergeKey] = execFunKey = '#' + execFunIndex++)
@@ -564,21 +583,15 @@ function vueFun(initFn) {
         afterFn(fnArg)
     })
 
-    // destroyed 最后加入
-    let tempFn = Object.create(vueFunTempClearFn)
     lifecycle.on('destroyed', function() {
         vm = null
         isInit = false
 
         // 自动清理临时字段中数据
-        for (let n in temp) {
-            let val = n.match(/^\$(w+)\$/)
-            if (val) {
-                tempFn[val[1]] && tempFn[val[1]](temp[n], n, temp)
-            }
-            temp[n] = undefined
-            delete temp[n]
-        }
+        clearTemp()
+
+        // 防止有一些回调未清理干净
+        clearTempHandle = setTimeout(clearTemp, 500)
     })
 
     lifecycle.make(options)
