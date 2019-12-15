@@ -1,20 +1,5 @@
 let hasOwnProperty = Object.prototype.hasOwnProperty
 let toString = Object.prototype.toString
-//
-function assign(data1, data2) {
-    for (let n in data2) {
-        if (hasOwnProperty.call(data2, n)) {
-            let type1 = toString.call(data1[n]).toLowerCase()
-            let type2 = toString.call(data2[n]).toLowerCase()
-            if (type1 == type2 && type2 == '[object object]') {
-                assign(data1[n], data2[n])
-                continue
-            }
-
-            data1[n] = data2[n]
-        }
-    }
-}
 
 // 插件模式
 // eslint-disable-next-line
@@ -25,7 +10,7 @@ export function vueFunOn(initFn) {
 }
 let beforeFns = {}
 let execFunIndex = 100
-let mergeKey = '_#_exec_fun__'
+let mergeKey = '_#_exec_fun_#_'
 function beforeFn() {
     let key = this.$options[mergeKey]
     key && beforeFns[key] && beforeFns[key].call(this)
@@ -186,28 +171,65 @@ function vueFun(initFn) {
         })
     }
 
-    function setData(data, key, val) {
-        let opt = vm || data
+    function assignData(data1, data2, setArr) {
+        for (let n in data2) {
+            if (hasOwnProperty.call(data2, n)) {
+                if (setArr && data1[n] == null) {
+                    setArr.push(data1, n, data2[n])
+                    continue
+                }
+                let type1 = toString.call(data1[n]).toLowerCase()
+                let type2 = toString.call(data2[n]).toLowerCase()
+                if (type1 == type2 && type2 == '[object object]') {
+                    assignData(data1[n], data2[n], setArr)
+                    continue
+                }
+
+                data1[n] = data2[n]
+            }
+        }
+    }
+
+    function $data(key, val) {
+        let opt = vm || optData
         if (typeof key == 'string') {
             if (val === undefined) {
                 return getSafe(key, opt)
             }
             key = { [key]: val }
         }
+        let setArr = (vm && []) || false
+        assignData(opt, key, setArr)
+        if (setArr && setArr.length) {
+            // 需要 通过 $set 来设置
+            setArr.forEach(function(item) {
+                vm.$set(...item)
+            })
+        }
         let back = {}
-        assign(data, key)
         Object.keys(key).forEach(function(n) {
-            dataProperty(back, n, data)
+            dataProperty(back, n, optData)
         })
         // console.log(back)
         return Object.freeze(back)
     }
-
-    function $data(key, val) {
-        return setData(optData, key, val)
-    }
     function $setup(key, val) {
-        return setData(optSetup, key, val)
+        if (typeof key == 'string') {
+            if (val === undefined) {
+                return getSafe(key, vm || optSetup)
+            }
+            key = { [key]: val }
+        }
+        if (isInit) {
+            warn('after')
+            return null
+        }
+        let back = {}
+        for (let n in key) {
+            optSetup[n] = key[n]
+            dataProperty(back, n, optSetup)
+        }
+        return Object.freeze(back)
     }
 
     let options = {
