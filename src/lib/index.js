@@ -33,18 +33,6 @@ export function vueFunInstall(vue, initFn) {
     }
 }
 
-export let vueFunTempClearFn = {
-    T(val) {
-        clearTimeout(val)
-    },
-    I(val) {
-        clearInterval(val)
-    },
-    D(val) {
-        val.destroy()
-    }
-}
-
 let msgOpt = {
     before: 'vue已经初始化，请在初始化之前调用',
     after: 'vue还没初始化，请在created之后调用'
@@ -420,14 +408,42 @@ function vueFun(initFn) {
     */
 
     // 清理
-    let tempFn = Object.create(vueFunTempClearFn)
-    let clearTempHandle
+    let tempTI = {}
+    function setTempTI(fn) {
+        return function(n) {
+            fn(temp[n])
+            if (tempTI[n] == null) {
+                tempTI[n] = temp[n]
+                delete temp[n]
+                Object.defineProperty(temp, n, {
+                    get() {
+                        return tempTI[n]
+                    },
+                    set(val) {
+                        tempTI[n] = val
+                        if (!vm) {
+                            // 不在可运行范围 设置延时
+                            fn(val)
+                        }
+                    }
+                })
+            }
+        }
+    }
+    let tempFn = {
+        T: setTempTI(clearTimeout),
+        I: setTempTI(clearInterval),
+        D(n) {
+            temp[n].destroy()
+            delete temp[n]
+        }
+    }
     function clearTemp() {
-        clearTimeout(clearTempHandle)
         for (let n in temp) {
             let val = n.match(/^\$(w+)\$/)
-            if (val) {
-                tempFn[val[1]] && tempFn[val[1]](temp[n], n, temp)
+            if (val && tempFn[val[1]]) {
+                tempFn[val[1]](temp[n], n, temp)
+                return
             }
             temp[n] = undefined
             delete temp[n]
@@ -436,10 +452,6 @@ function vueFun(initFn) {
 
     let lifecycle = makeLifecycle()
     function getVM() {
-        if (!vm) {
-            // 开始前先清理
-            clearTemp()
-        }
         vm = this
     }
     let execFunKey = (options[mergeKey] = execFunKey = '#' + execFunIndex++)
@@ -589,9 +601,6 @@ function vueFun(initFn) {
 
         // 自动清理临时字段中数据
         clearTemp()
-
-        // 防止有一些回调未清理干净
-        clearTempHandle = setTimeout(clearTemp, 500)
     })
 
     lifecycle.make(options)
@@ -606,6 +615,5 @@ function vueFun(initFn) {
 
 vueFun.on = vueFunOn
 vueFun.install = vueFunInstall
-vueFun.tempClearFn = vueFunTempClearFn
 
 export default vueFun
