@@ -159,17 +159,17 @@ function vueFun(initFn) {
         })
     }
 
-    function assignData(data1, data2, setArr) {
+    function assignData(data1, data2) {
         for (let n in data2) {
             if (hasOwnProperty.call(data2, n)) {
-                if (setArr && data1[n] == null) {
-                    setArr.push(data1, n, data2[n])
+                if (vm && vm != data1 && data1[n] == null) {
+                    vm.$set(data1, n, data2[n])
                     continue
                 }
                 let type1 = toString.call(data1[n]).toLowerCase()
                 let type2 = toString.call(data2[n]).toLowerCase()
                 if (type1 == type2 && type2 == '[object object]') {
-                    assignData(data1[n], data2[n], setArr)
+                    assignData(data1[n], data2[n])
                     continue
                 }
 
@@ -186,14 +186,7 @@ function vueFun(initFn) {
             }
             key = { [key]: val }
         }
-        let setArr = (vm && []) || false
-        assignData(opt, key, setArr)
-        if (setArr && setArr.length) {
-            // 需要 通过 $set 来设置
-            setArr.forEach(function(item) {
-                vm.$set(...item)
-            })
-        }
+        assignData(opt, key)
         let back = {}
         Object.keys(key).forEach(function(n) {
             dataProperty(back, n, optData)
