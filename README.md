@@ -64,7 +64,7 @@
 
 ### 获取当前 vue 的对象 vm
 
-`$vm()`
+`$.vm`
 
 -   最早请在 beforeCreate 钩子函数触发之后使用，否则返回 null
 

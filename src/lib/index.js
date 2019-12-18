@@ -127,22 +127,6 @@ function vueFun(initFn) {
         }
     }
 
-    // 代理
-    function $vm(key, args) {
-        if (!vm) {
-            return null
-        }
-        if (key === undefined) {
-            return vm
-        }
-
-        let val = getSafe(key, vm)
-        if (args === undefined) {
-            return val
-        }
-        return val.apply(vm, args)
-    }
-
     let optData = {}
     let optSetup = {}
     function dataProperty(back, key, data) {
@@ -464,6 +448,57 @@ function vueFun(initFn) {
 
     let $emit = quickVueNext('$emit')
 
+    function $(key) {
+        if (!vm) {
+            warn('after')
+            return
+        }
+        return vm.$refs[key]
+    }
+
+    Object.definePropertys($, {
+        vm: {
+            get() {
+                return vm || null
+            },
+            set(val) {
+                if (!vm) {
+                    vm = val
+                }
+            }
+        },
+        router: {
+            get() {
+                if (vm) {
+                    return m.$router
+                }
+                if (Vue) {
+                    return Vue.property.$router
+                }
+                return null
+            }
+        },
+        route: {
+            get() {
+                if (vm) {
+                    return vm.$route
+                }
+                return ($.router && $.router.currentRoute) || null
+            }
+        },
+        store: {
+            get() {
+                if (vm) {
+                    return vm.$store
+                }
+                if (Vue) {
+                    return Vue.property.$store
+                }
+                return null
+            }
+        }
+    })
+
     let fnArg = {
         temp,
         tempFn,
@@ -476,7 +511,8 @@ function vueFun(initFn) {
         // 通用
         $setOpt,
         $setProt,
-        $vm,
+        // 一些常规的获取属性
+        $,
         $bindNext: quickVueNext,
         $name: setProt('name'),
         $mixin: mixin,
