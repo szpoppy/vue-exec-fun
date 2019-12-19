@@ -456,7 +456,7 @@ function vueFun(initFn) {
         return vm.$refs[key]
     }
 
-    Object.definePropertys($, {
+    Object.defineProperties($, {
         vm: {
             get() {
                 return vm || null
@@ -470,7 +470,7 @@ function vueFun(initFn) {
         router: {
             get() {
                 if (vm) {
-                    return m.$router
+                    return vm.$router
                 }
                 if (Vue) {
                     return Vue.property.$router
