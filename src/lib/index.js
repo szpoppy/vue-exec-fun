@@ -456,48 +456,27 @@ function vueFun(initFn) {
         return vm.$refs[key]
     }
 
-    Object.defineProperties($, {
-        vm: {
-            get() {
-                return vm || null
-            },
-            set(val) {
-                if (!vm) {
-                    vm = val
-                }
-            }
-        },
-        router: {
-            get() {
-                if (vm) {
-                    return vm.$router
-                }
-                if (Vue) {
-                    return Vue.property.$router
-                }
-                return null
-            }
-        },
-        route: {
-            get() {
-                if (vm) {
-                    return vm.$route
-                }
-                return ($.router && $.router.currentRoute) || null
-            }
-        },
-        store: {
-            get() {
-                if (vm) {
-                    return vm.$store
-                }
-                if (Vue) {
-                    return Vue.property.$store
-                }
-                return null
-            }
+    Object.defineProperty($, 'vm', {
+        get() {
+            return vm || null
         }
     })
+
+    function bindTo$(key) {
+        if (typeof key == 'string') {
+            Object.defineProperty($, key, {
+                get() {
+                    return (vm && vm['$' + key]) || null
+                },
+                set() {}
+            })
+            return
+        }
+
+        key.forEach(bindTo$)
+    }
+
+    bindTo$(['router', 'route', 'store'])
 
     let fnArg = {
         temp,
@@ -609,6 +588,10 @@ function vueFun(initFn) {
                 afterArr.push(afterFn)
             },
             fnArg,
+            bindTo$,
+            setVM(_) {
+                vm = _
+            },
             lifecycle,
             makeLifecycle,
             setOpt,
