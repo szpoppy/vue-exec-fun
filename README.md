@@ -11,7 +11,7 @@
 
 -   外挂方式
 -   提供另一种方式的函数式方式写 vue 代码
--   与 vue-funciton-api 不冲突 -_-
+-   与 vue-funciton-api 不冲突 -\_-
 
 ## 先来一段简单代码
 
@@ -65,6 +65,12 @@
 ### 获取当前 vue 的对象 vm
 
 `$.vm`
+
+-   最早请在 beforeCreate 钩子函数触发之后使用，否则返回 null
+
+### 获取当前 vue 的对象 \$router
+
+`$.router`
 
 -   最早请在 beforeCreate 钩子函数触发之后使用，否则返回 null
 
