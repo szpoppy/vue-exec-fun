@@ -74,6 +74,12 @@
 
 -   最早请在 beforeCreate 钩子函数触发之后使用，否则返回 null
 
+### 获取当前 vue 的对象 \$route
+
+`$.route`
+
+-   最早请在 beforeCreate 钩子函数触发之后使用，否则返回 null
+
 ### 绑定函数的 this 为 vm
 
 `$bindNext(fn:function:string, ...args):function`
