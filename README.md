@@ -68,13 +68,19 @@
 
 -   最早请在 beforeCreate 钩子函数触发之后使用，否则返回 null
 
-### 获取当前 vue 的对象 \$router
+### 获取当前 vue-router 的对象 \$router
 
 `$.router`
 
 -   最早请在 beforeCreate 钩子函数触发之后使用，否则返回 null
 
-### 获取当前 vue 的对象 \$route
+### 获取当前 vue-router 的对象 \$route
+
+`$.store`
+
+-   最早请在 beforeCreate 钩子函数触发之后使用，否则返回 null
+
+### 获取当前 vuex 的对象 \$store
 
 `$.route`
 
