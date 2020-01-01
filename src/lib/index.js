@@ -140,7 +140,12 @@ function makeLifecycle(inits) {
         },
         make(opt = {}, exec = lifecycleExec) {
             for (let n in lifecycles) {
-                opt[n] = exec(lifecycles[n])
+                let fn = exec(lifecycles[n])
+                if (toString.call(opt[n]).toLowerCase() == '[object array]') {
+                    opt[n].push(fn)
+                } else {
+                    opt[n] = fn
+                }
             }
             return opt
         },
@@ -281,6 +286,9 @@ function vueFun(initFn) {
             warn('[$set]')
             return
         }
+        if (!prot) {
+            return options
+        }
         let opt = prot
         if (typeof prot == 'string') {
             opt = { [prot]: val }
@@ -313,6 +321,8 @@ function vueFun(initFn) {
 
             options[n] = opt[n]
         }
+
+        return options
     }
 
     function quickSet(prot, formatFn) {
@@ -394,9 +404,6 @@ function vueFun(initFn) {
     }
 
     let fnArg = {
-        // 参数
-        options,
-
         // 通用
         $set,
         $name: quickSet('name'),
@@ -497,22 +504,35 @@ function vueFun(initFn) {
         })
 
         initFlag = true
-
-        // if (fn) {
-        //     let opt = options
-        //     options = output.options
-        //     $set(opt)
-        //     debugger
-        //     fn(options)
-        //     return
-        // }
+        // console.log("[options]", options)
+        // fn && fn(options)
         // console.log("[options]", options, optData, optSetup)
         return options
     }
 
     if (!initFn) {
-        output.options = {}
-        fnArg.$output = output
+        // output.options = options
+        fnArg.$export = function(resolve, reject) {
+            if (resolve) {
+                if (reject) {
+                    output()
+                    resolve(options)
+                    return
+                }
+                // 异步模式
+                let ept = function(fn) {
+                    resolve(function() {
+                        output()
+                        fn(options)
+                    })
+                }
+                ept.options = options
+                return ept
+            }
+            output()
+            return options
+        }
+        fnArg.$export.options = options
         return fnArg
     }
 

@@ -13,7 +13,7 @@
 -   提供另一种方式的函数式方式写 vue 代码
 -   与 vue-funciton-api 不冲突 -\_-
 
-> 以下文档不适用于 2.0.0，由于之前设计缺陷，导致无法解决bug，重新设计
+> 以下文档不适用于 2.0.0，由于之前设计缺陷，导致无法解决 bug，重新设计
 
 ## 先来一段简单代码
 
@@ -24,28 +24,13 @@
 <style></style>
 <script>
     import vueExecFun from "vue-exec-fun"
-    export default vueExecFun(function({...}){
-
-    })
+    let {..., $output} = vueExecFun()
+    ...
+    export default $output()
 </script>
 ```
 
-> 从上述代码中，我们可以看到，通过 vueExecFun()来生成 vue 的 options 参数
-
 ## API
-
-### 临时变量
-
-`temp`
-
--   存放在这里的数据，在 vue 销毁的时候，也会自动销毁
--   $T$打头的变量，销毁时会自动调用 clearTimeout
--   $I$打头的变量，销毁时会自动调用 clearInterval
--   $D$打头的变量，销毁时会自动调用 存入值的 destroy
-
-`tempFn`
-
--   存放 T I D 格式化函数的对象，需要新的清理函数，可以在这里定义
 
 ### 最终返回的值
 
