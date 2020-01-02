@@ -482,6 +482,10 @@ function vueFun(initFn) {
     })
 
     function output() {
+        if (initFlag) {
+            // 防止多次执行
+            return
+        }
         afterArr.forEach(function(afterFn) {
             afterFn(fnArg)
         })
