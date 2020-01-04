@@ -116,20 +116,13 @@ function makeLifecycle(inits) {
         get() {
             return lifecycles
         },
-        on(key, fn) {
-            if (typeof key == 'function') {
-                fn = key
-                key = fn.name.replace(/^\$/, '')
-            }
+        on(key, fn, isBind = false) {
             if (typeof key == 'string') {
                 let lc = lifecycles[key]
                 if (!lc) {
                     lc = lifecycles[key] = []
                 }
-                if (fn.name.indexOf('$') == 0) {
-                    fn = $bind(fn)
-                }
-                lc.push(fn)
+                lc.push((isBind && $bind(fn)) || fn)
                 return
             }
             for (let n in key) {
@@ -159,7 +152,9 @@ function makeLifecycle(inits) {
             if (lifecycles[key] === undefined) {
                 lifecycles[key] = []
             }
-            return fn => back.on(key, fn)
+            return function(fn, isBind) {
+                return back.on(key, fn, isBind)
+            }
         },
         has() {
             for (let n in lifecycles) {
@@ -206,8 +201,9 @@ function assignExt(vm, opt) {
 
 function setExt(vm, opt) {
     // debugger
-    let temp = opt.temp
-    delete opt.temp
+    let data = Object.assign({}, opt)
+    let temp = data.temp
+    delete data.temp
     let ext = assignExt(vm, opt)
     ext.vm = vm
     ext.temp = temp
@@ -269,7 +265,7 @@ function vueFun(initFn) {
             let fn = val[n]
             let key = n
             if (!fn.__$ext) {
-                key = n.replace(/^\$/, function() {
+                key = n.replace(/^:/, function() {
                     fn = $bind(fn)
                     return ''
                 })
@@ -446,7 +442,7 @@ function vueFun(initFn) {
         $nextTick: quickNext('$nextTick'),
         $emit: quickNext('$emit'),
 
-        $bind,
+        $: $bind,
         $getExt: getExt,
         $setExt(opt) {
             if (typeof opt == 'function') {
