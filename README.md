@@ -174,7 +174,7 @@ $props({
 
 ### 绑定方法的第一个参数为特定功能参数 \$extData
 
-`$bind(fun:function|object|array)`
+`$(fun:function|object|array)`
 
 ### \$getExt
 
