@@ -1,9 +1,9 @@
 {
     "name": "vue-exec-fun",
-    "version": "2.0.8",
+    "version": "2.0.9",
     "description": "函数式方式写vue",
     "main": "dist/lib/index.js",
-    "author": "张钰峰",
+    "author": "locus",
     "license": "MIT",
     "dependencies": {
         "vue-life": "^1.2.6"
