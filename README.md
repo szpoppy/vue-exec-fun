@@ -148,6 +148,7 @@ $props({
 `$methods({...})`
 
 -   同 vueOptions 的 methods
+-   方法名称首字母为 : 表示该方法第一个参数接收为 extData，同时，vue中的方法名称中无:号
 
 ### 生命周期函数注册
 
