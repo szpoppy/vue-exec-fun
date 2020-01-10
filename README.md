@@ -45,7 +45,7 @@
 
 `$set(vueOptions)`
 
--   将 vueOptions 合并入 vue 参数
+-   将 vueOptions 合并入 vue 的 options 参数
 
 ### 生成 name
 
