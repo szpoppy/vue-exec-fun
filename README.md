@@ -57,7 +57,7 @@
 
 `$mixin(...arg[:options])`
 
--   同 vueOptions 的 mixin
+-   同 vueOptions 的 mixins
 
 ### 组件
 
