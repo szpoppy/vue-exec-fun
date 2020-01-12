@@ -111,6 +111,7 @@ $props({
 `$data({...})`
 
 -   同 vueOptions 的 data
+-   多次设置，会自动合并代码
 
 ### 原生函数式 setup 中数据输出
 
