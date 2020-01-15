@@ -85,15 +85,6 @@ $props({
     }
 })
 
-// 上下写法效果相同
-
-$props({
-    value: {
-        type: String,
-        default: ""
-    }
-})
-
 // 以下是传统写法
 {
     props: {
