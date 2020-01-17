@@ -71,12 +71,11 @@
 
 -   同 vueOptions 的 directives
 
-### 组件入参
+### 组件传参
 
 `$props({...})`
 
 -   同 vueOptions 的 props
--   支持参数 setFn，表示设置入参的值的方法
 
 ```js
 $props({
