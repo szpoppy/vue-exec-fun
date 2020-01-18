@@ -55,7 +55,7 @@
 
 ### 混合
 
-`$mixin(...arg[:options])`
+`$mixins(...arg[:options])`
 
 -   同 vueOptions 的 mixins
 
@@ -78,15 +78,6 @@
 -   同 vueOptions 的 props
 
 ```js
-$props({
-    value: {
-        type: String,
-        default: ""
-    }
-})
-
-// 上下写法效果相同 
-
 $props({
     value: {
         type: String,
