@@ -403,7 +403,7 @@ function vueFun(initFn) {
         // 通用
         $set,
         $name: quickSet('name'),
-        $mixin: quickSet('mixin'),
+        $mixins: quickSet('mixins'),
         $components: quickSet('components'),
         $directives: quickSet('directives'),
 
