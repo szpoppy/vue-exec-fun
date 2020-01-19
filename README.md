@@ -55,7 +55,7 @@
 
 ### 混合
 
-`$mixin(...arg[:options])`
+`$mixins(...arg[:options])`
 
 -   同 vueOptions 的 mixins
 
