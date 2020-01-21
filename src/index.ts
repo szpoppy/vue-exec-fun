@@ -283,7 +283,44 @@ interface execOptions extends ComponentOptions<Vue> {
     [propName: string]: any
 }
 
-function vueFun(initFn: Function) {
+interface exportFn extends Function {
+    options?: execOptions
+}
+
+interface fnArgs {
+    // 通用
+    $set: Function
+    $name: Function
+    $mixins: Function
+    $components: Function
+    $directives: Function
+
+    // 参数
+    $props: Function
+    $data: Function
+    $setup: Function
+    $computed: Function
+    $filters: Function
+    $model: Function
+    $watch: Function
+    $methods: Function
+
+    $lifecycle: Function
+    $created: Function
+    $mounted: Function
+    $destroyed: Function
+
+    $nextTick: Function
+    $emit: Function
+
+    $: Function
+    $getExt: Function
+    $setExt: Function
+
+    $export?: exportFn
+}
+
+function vueFun(initFn: Function): fnArgs {
     let initFlag = false
     let options: anyObj = {}
     let merges: fnObj = {}
@@ -321,7 +358,7 @@ function vueFun(initFn: Function) {
     // mixins
     options.mixins = []
 
-    function $set(prot?: string | execOptions, val?: any): execOptions {
+    function $set(prot?: string | execOptions, val?: any): exportFn | execOptions {
         if (initFlag) {
             warn("[$set]")
             return
@@ -405,7 +442,7 @@ function vueFun(initFn: Function) {
         get(key: string): any {
             return getSafe(key, this as Vue)
         },
-        set(key, val) {
+        set(key: string, val: any) {
             let self = this as Vue
             if (typeof key === "string") {
                 let k
@@ -434,7 +471,7 @@ function vueFun(initFn: Function) {
         temp: {}
     }
 
-    let fnArg: anyObj = {
+    let fnArg: fnArgs = {
         // 通用
         $set,
         $name: quickSet("name"),
@@ -575,3 +612,8 @@ function vueFun(initFn: Function) {
 
     return output()
 }
+
+vueFun.on = vueFunOn
+vueFun.install = vueFunInstall
+
+export default vueFun
