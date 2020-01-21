@@ -13,7 +13,8 @@
 -   提供另一种方式的函数式方式写 vue 代码
 -   与 vue-funciton-api 不冲突 -\_-
 
-> 以下文档不适用于 2.0.0，由于之前设计缺陷，导致无法解决 bug，重新设计
+-   以下文档不适用于 2.0.0，由于之前设计缺陷，导致无法解决 bug，重新设计
+-   [2020-01-21]TS 改造
 
 ## 先来一段简单代码
 
@@ -139,7 +140,7 @@ $props({
 `$methods({...})`
 
 -   同 vueOptions 的 methods
--   方法名称首字母为 : 表示该方法第一个参数接收为 extData，同时，vue中的方法名称中无:号
+-   方法名称首字母为 : 表示该方法第一个参数接收为 extData，同时，vue 中的方法名称中无:号
 
 ### 生命周期函数注册
 
@@ -255,14 +256,14 @@ let life = makeLifecycle()
 // fnArg 新增属性 $life $before $ready
 Object.assign(fnArg, {
     $life: life.on,
-    $before: life.currying('before'),
-    $ready: life.currying('ready')
+    $before: life.currying("before"),
+    $ready: life.currying("ready")
 })
 
 after(function() {
     if (life.has()) {
         // 如果有钩子函数，就绑定到options
-        life.make('life')
+        life.make("life")
     }
 
     // console.log("options", options)
@@ -276,11 +277,11 @@ after(function() {
 ```js
 // 不会讲述，来两个实例吧
 
-fnArg.$props = quickSet('props')
+fnArg.$props = quickSet("props")
 
-fnArg.$components = quickSet('components')
+fnArg.$components = quickSet("components")
 
-fnArg.$methods = quickSet('methods')
+fnArg.$methods = quickSet("methods")
 ```
 
 ### 将某些方法绑定到制定生命周期后执行(默认 mounted )
@@ -288,8 +289,8 @@ fnArg.$methods = quickSet('methods')
 `quickNext`
 
 ```js
-$nextTick = quickNext('$nextTick')
-$emit = quickNext('$emit')
+$nextTick = quickNext("$nextTick")
+$emit = quickNext("$emit")
 ```
 
 ### 设置 quickNext 绑定的生命周期函数
