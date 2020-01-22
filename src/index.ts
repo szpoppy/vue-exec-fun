@@ -320,7 +320,7 @@ interface fnArgs {
     $export?: exportFn
 }
 
-function vueFun(initFn: Function): fnArgs {
+function vueFun(initFn: Function): fnArgs | execOptions {
     let initFlag = false
     let options: anyObj = {}
     let merges: fnObj = {}
@@ -358,7 +358,7 @@ function vueFun(initFn: Function): fnArgs {
     // mixins
     options.mixins = []
 
-    function $set(prot?: string | execOptions, val?: any): exportFn | execOptions {
+    function $set(prot?: string | execOptions, val?: any): execOptions {
         if (initFlag) {
             warn("[$set]")
             return

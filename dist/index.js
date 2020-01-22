@@ -523,4 +523,7 @@ function vueFun(initFn) {
     initFn && initFn(fnArg);
     return output();
 }
+vueFun.on = vueFunOn;
+vueFun.install = vueFunInstall;
+exports.default = vueFun;
 //# sourceMappingURL=index.js.map
