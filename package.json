@@ -1,8 +1,8 @@
 {
     "name": "vue-exec-fun",
-    "version": "2.2.1",
+    "version": "2.3.0",
     "description": "函数式方式写vue",
-    "main": "dist/index.js",
+    "main": "index.js",
     "scripts": {
         "build": "rm -rf ./dist && tsc"
     },
